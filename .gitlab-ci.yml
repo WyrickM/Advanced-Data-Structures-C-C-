@@ -1,0 +1,308 @@
+#
+#  GitLab CI/CD configuration file
+#   This file describes how to build and test our projects
+#   You probably shouldn't edit this one for the CptS223 class
+#   More information on GitLab CI/CD is here:
+#      https://docs.gitlab.com/ce/ci/yaml/
+#
+#  Copyright 2018
+#  Contributors:
+#    Aaron S. Crandall <acrandal@wsu.edu>
+#    Sean Kallaher <sean.kallaher@wsu.edu>
+#
+
+# Default Docker image is Alpine Linux's latest release
+#  Each job in the pipeline will run in a separate Alpine Linux environment
+image: alpine:3.8
+
+# Defining the two stages for this CI pipeline
+#   Stage 1 - build the software
+#   Stage 2 - test the starter software
+#   Stage 3 - test the assignment requirements
+stages:
+   - build
+   - starter-tests
+   - base-tests
+
+
+#*****************************************************************************#
+#****************************** Start Job Templates **************************#
+#*****************************************************************************#
+.projectmergetest: &projectmergetest |
+   if [ ! -d "$ASSIGNMENT_DIR" ]; then # assignment isn't in place
+   echo "No project dir";
+   echo "You should merge all projects to master";
+   exit 1;
+   fi
+
+# This is the job template which each assignment will extend to run its build
+.build:
+    stage: build
+    before_script:
+        - echo "Building project - $ASSIGNMENT_DIR"
+        - *projectmergetest            # See multiline block above
+        - apk add --update g++ make >> /dev/null
+        - cd $ASSIGNMENT_DIR
+    script:
+        - make build
+    allow_failure: true
+    tags:
+        - linux
+        - docker
+
+# This is a template for all test templates to encompass dependencies and such
+# NOTE: This is not typically to be directly extended by an assigment,
+#   but only by another test template such as .starter-tests or .base-tests
+.test:
+    before_script:
+        - echo "Testing project - $ASSIGNMENT_DIR"
+        - *projectmergetest
+        - echo "http://dl-3.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories
+        - echo "http://dl-3.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+        - apk add --update g++ make gmock gtest gtest-dev bash >> /dev/null
+        - cd $ASSIGNMENT_DIR
+    allow_failure: true
+    tags:
+        - linux
+        - docker
+
+# This is the job template which each assignment will extend to run its tests
+.starter-tests:
+    extends: .test
+    stage: starter-tests
+    script:
+        - make starter-tests
+
+# This is the job template which each assignment will extend to run its tests
+.base-tests:
+    extends: .test
+    stage: base-tests
+    script:
+        - make base-tests
+
+#*****************************************************************************#
+#****************************** End Templates ********************************#
+#*****************************************************************************#
+
+#**************************** Start Build & test jobs ************************#
+
+# Start of MA1 - Hello World on Linux w/Git **********************************#
+# MA1 is the Hello World assignment
+MA1-HelloWorld-build:
+    extends: .build
+    variables:
+        ASSIGNMENT_DIR: "MA1"
+
+# Run the starting code tests
+MA1-HelloWorld-starter-tests:
+    extends: .starter-tests
+    variables:
+        ASSIGNMENT_DIR: "MA1"
+
+# Run the base code tests
+MA1-HelloWorld-base-tests:
+    extends: .base-tests
+    variables:
+        ASSIGNMENT_DIR: "MA1"
+# END of MA1 - Hello World assignment ******************************************#
+
+# Start of MA2 the Linked List Big Five project ********************************#
+# MA2 is the Big Five assignment
+MA2-BigFive-build:
+    extends: .build
+    variables:
+        ASSIGNMENT_DIR: "MA2-BigFive"
+
+# Run the starter code tests
+MA2-BigFive-starter-tests:
+    extends: .starter-tests
+    variables:
+        ASSIGNMENT_DIR: "MA2-BigFive"
+
+# Run the base code tests
+MA2-BigFive-base-tests:
+    extends: .base-tests
+    variables:
+        ASSIGNMENT_DIR: "MA2-BigFive"
+# END of MA2 - Big Five assignment *******************************************#
+
+# Start of MA3 - The BST Level Order project *********************************#
+# MA3 is the BST Level Order (and Big Five) project
+MA3-BSTLevelOrder-build:
+  extends: .build
+  variables:
+    ASSIGNMENT_DIR: "MA3-BSTLevel"
+
+# Run the starter code tests
+MA3-BSTLevelOrder-starter-tests:
+    extends: .starter-tests
+    variables:
+        ASSIGNMENT_DIR: "MA3-BSTLevel"
+
+# Run the base code tests
+MA3-BSTLevelOrder-base-tests:
+    extends: .base-tests
+    variables:
+        ASSIGNMENT_DIR: "MA3-BSTLevel"
+# END of MA3 - BST Level Order (and Big Five) project *************************#
+
+# Start of MA4 - Detecting duplicate string with unordered_map / hashtables ***#
+# MA4 is the string duplicates finding with hash tables project
+MA4-StringDups-build:
+  extends: .build
+  variables:
+    ASSIGNMENT_DIR: "MA4-StringDups"
+
+# Run the starter code tests
+MA4-StringDups-starter-tests:
+    extends: .starter-tests
+    variables:
+        ASSIGNMENT_DIR: "MA4-StringDups"
+
+# Run the base code tests
+MA4-StringDups-base-tests:
+    extends: .base-tests
+    variables:
+        ASSIGNMENT_DIR: "MA4-StringDups"
+# END of MA4 - Hashing to find string duplicates project **********************#
+
+# Start of MA5 - Implementing Heap percolate up and down **********************#
+# MA5 is the heap project
+MA5-HeapPercolate-build:
+  extends: .build
+  variables:
+    ASSIGNMENT_DIR: "MA5-HeapPercolate"
+
+# Run the starter code tests
+MA5-HeapPercolate-starter-tests:
+    extends: .starter-tests
+    variables:
+        ASSIGNMENT_DIR: "MA5-HeapPercolate"
+
+# Run the base code tests
+MA5-HeapPercolate-base-tests:
+    extends: .base-tests
+    variables:
+        ASSIGNMENT_DIR: "MA5-HeapPercolate"
+# END of MA5 - Implementing Heap percolate up and down **********************#
+#
+# Start of MA6 - Implementing Dijkstra's Algorithm  *************************#
+# MA6 is the Dijkstra's graph path finding algorithm
+MA6-Dijkstra-build:
+  extends: .build
+  variables:
+    ASSIGNMENT_DIR: "MA6-Dijkstra"
+
+# Run the starter code tests
+MA6-Dijkstra-starter-tests:
+    extends: .starter-tests
+    variables:
+        ASSIGNMENT_DIR: "MA6-Dijkstra"
+
+# Run the base code tests
+MA6-Dijkstra-base-tests:
+    extends: .base-tests
+    variables:
+        ASSIGNMENT_DIR: "MA6-Dijkstra"
+# END of MA6 - Implementing Dijkstra's Algorithm ***************************#
+
+
+###############################################################################
+#                           End of MA Build & Test
+###############################################################################
+
+
+# Start HW1 - Big-O, Big Five, Linux, and Git written homeowrk ***************#
+# Run a test to find the PDF of the homework
+# Note: HW1 did not ship with a Makefile to do the test, but the test.sh script
+HW1-PDF-Check-Test:
+    extends: .base-tests
+    variables:
+        ASSIGNMENT_DIR: "HW1-BigO-Linux"
+# End HW1 Tests ***************************************************************#
+
+# Start HW2 - Trees! **********************************************************#
+# Run a test to find the PDF of the homework
+HW2-PDF-Check-Test:
+    extends: .base-tests
+    variables:
+        ASSIGNMENT_DIR: "HW2-Trees"
+# End HW2 Tests ***************************************************************#
+
+# Start HW3 - Hashing Heaps Sorting! **********************************************************#
+# Run a test to find the PDF of the homework
+HW3-PDF-Check-Test:
+    extends: .base-tests
+    variables:
+        ASSIGNMENT_DIR: "HW3-Hashing-Heaps-Sorting"
+# End HW3 Tests ***************************************************************#
+
+# Start HW4 - Graphs **********************************************************#
+# Run a test to find the PDF of the homework
+HW4-PDF-Check-Test:
+    extends: .base-tests
+    variables:
+        ASSIGNMENT_DIR: "HW4-Graphs"
+# End HW4 Tests ***************************************************************#
+
+###############################################################################
+#                           End of Homework Tests
+###############################################################################
+
+# Start PA1 - AVL implementation project *************************************#
+PA1-AVL-build:
+    extends: .build
+    variables:
+        ASSIGNMENT_DIR: "PA1-AVLTree"
+
+# Run the starter code tests
+PA1-AVL-starter-tests:
+    extends: .starter-tests
+    variables:
+        ASSIGNMENT_DIR: "PA1-AVLTree"
+
+# Run the base code tests
+PA1-AVL-base-tests:
+    extends: .base-tests
+    variables:
+        ASSIGNMENT_DIR: "PA1-AVLTree"
+# End of PA1 - AVL Tree Implementation ***************************************#
+
+# Start PA2 - Hashtables implementation project ******************************#
+PA2-Hash-build:
+    extends: .build
+    variables:
+        ASSIGNMENT_DIR: "PA2-Hashtables"
+
+# Run the starter code tests
+PA2-Hash-starter-tests:
+    extends: .starter-tests
+    variables:
+        ASSIGNMENT_DIR: "PA2-Hashtables"
+
+# Run the base code tests
+PA2-Hash-base-tests:
+    extends: .base-tests
+    variables:
+        ASSIGNMENT_DIR: "PA2-Hashtables"
+# End of PA2 - Hashtables Implementation *************************************#
+
+# Start of PA3 - Implementing sorting algorithms ****************************#
+# PA3 is the sorting project
+PA3-Sorting-build:
+  extends: .build
+  variables:
+    ASSIGNMENT_DIR: "PA3-Sorting"
+
+# Run the starter code tests
+PA3-Sorting-starter-tests:
+    extends: .starter-tests
+    variables:
+        ASSIGNMENT_DIR: "PA3-Sorting"
+
+# Run the base code tests
+PA3-Sorting-base-tests:
+    extends: .base-tests
+    variables:
+        ASSIGNMENT_DIR: "PA3-Sorting"
+# END of PA3 - Implementing Sorting Algorithms ******************************#
